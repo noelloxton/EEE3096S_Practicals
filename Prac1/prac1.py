@@ -8,11 +8,20 @@ Date: 4/8/2019
 """
 
 # import Relevant Librares
-import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO  #import Raspberry Pi GPIO python module
+from time import sleep  #import the sleep function from the time module
 
 # Logic that you write
 def main():
-    print("write your logic here")
+	GPIO.setwarnings(False)  # Ignore Warnings for now
+    	GPIO.setmode(GPIO.BOARD) # Use Physical pin numbering
+    	GPIO.setup(8, GPIO.OUT, initial=GPIO.LOW)  #set pin 8 to be an output pin and set its initial value to low
+   
+    	while True: #run forever
+    		GPIO.output(8, GPIO.HIGH) #Turn on
+		sleep(1)
+		GPIO.output(8, GPIO.LOW)  #Turn off
+		sleep(1)
 
 
 # Only run the functions if 
