@@ -10,24 +10,34 @@ Date: 4/8/2019
 # import Relevant Librares
 import RPi.GPIO as GPIO  #import Raspberry Pi GPIO python module
 from time import sleep  #import the sleep function from the time module
-import itertools
+from itertools import product
 
 #make array variable storing itertools.product
-#global i[] = itertools.product([0,1],repeat=3)
-#global int x = 0
+x=0
+list = [product([0,1],repeat=3)]
+#y = [product([0,1],repeat=3)]
+#for i in product([0,1],repeat=3):
+#	list[x] = i
+#	x=x+1
+
+
 
 #button1/black_button detection method
 def button1_increment(channel):
+	global x
+#	x = 0
 	print("black button was pushed!")
 	print("incrementing...\n")
-	GPIO.output(10, GPIO.HIGH)
-	GPIO.output(11, GPIO.LOW)
+#	x = x+1
+	print(list[0])
+	GPIO.output(10, 1)
+	GPIO.output(11, 0)
 #button2/red_button detection method
 def button2_decrement(channel):
 	print("red button was pushed!")
 	print("decrementing...\n")
-	GPIO.output(10, GPIO.LOW)
-	GPIO.output(11, GPIO.HIGH)
+	GPIO.output(10, 0)
+	GPIO.output(11, 1)
 
 #set numbering system to BCM
 GPIO.setmode(GPIO.BOARD)
