@@ -12,28 +12,27 @@ import RPi.GPIO as GPIO  #import Raspberry Pi GPIO python module
 from time import sleep  #import the sleep function from the time module
 from itertools import product
 
-#make array variable storing itertools.product
-x=0
-list = [product([0,1],repeat=3)]
-#y = [product([0,1],repeat=3)]
-#for i in product([0,1],repeat=3):
-#	list[x] = i
-#	x=x+1
-
-
+#make list variable storing itertools.product
+x = product([0,1], repeat=3)
+bin_count = list(x)
+count = 0
 
 #button1/black_button detection method
 def button1_increment(channel):
-	global x
-#	x = 0
+	global count, bin_count, x
 	print("black button was pushed!")
 	print("incrementing...\n")
-#	x = x+1
-	print(list[0])
+	if count == 7:
+		count = 0
+	else:
+		count = count+1
+	print(bin_count[0])
 	GPIO.output(10, 1)
 	GPIO.output(11, 0)
+	GPIO.output(12, 1)
 #button2/red_button detection method
 def button2_decrement(channel):
+	global count, bin_count, x
 	print("red button was pushed!")
 	print("decrementing...\n")
 	GPIO.output(10, 0)
