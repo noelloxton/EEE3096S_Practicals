@@ -26,17 +26,23 @@ def button1_increment(channel):
 		count = 0
 	else:
 		count = count+1
-	print(bin_count[0])
-	GPIO.output(10, 1)
-	GPIO.output(11, 0)
-	GPIO.output(12, 1)
+	print(bin_count[count])
+	GPIO.output(10, bin_count[count][0])
+	GPIO.output(11, bin_count[count][1])
+	GPIO.output(12, bin_count[count][2])
 #button2/red_button detection method
 def button2_decrement(channel):
 	global count, bin_count, x
 	print("red button was pushed!")
 	print("decrementing...\n")
-	GPIO.output(10, 0)
-	GPIO.output(11, 1)
+	if count == 0:
+		count = 7
+	else:
+		count = count-1
+	print(bin_count[count])
+	GPIO.output(10, bin_count[count][0])
+	GPIO.output(11, bin_count[count][1])
+	GPIO.output(12, bin_count[count][2])
 
 #set numbering system to BCM
 GPIO.setmode(GPIO.BOARD)
