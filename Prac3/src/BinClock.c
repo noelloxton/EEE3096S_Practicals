@@ -4,8 +4,8 @@
  * Modified for EEE3095S/3096S by Keegan Crankshaw
  * August 2019
  * 
- * <STUDNUM_1> <STUDNUM_2>
- * Date
+ * <LXTNOE001> <BRRMAU002>
+ * 21/8/2019
 */
 
 #include <wiringPi.h>
@@ -20,7 +20,7 @@
 int hours, mins, secs;
 long lastInterruptTime = 0; //Used for button debounce
 int RTC; //Holds the RTC instance
-
+int var;
 int HH,MM,SS;
 
 void initGPIO(void){
@@ -41,6 +41,11 @@ void initGPIO(void){
 	
 	//Set Up the Seconds LED for PWM
 	//Write your logic here
+	pinMode(SECS,PWM_OUTPUT);
+	//pwmSetMode(PWM_MODE_MS);
+	//pwmSetRange(1024);
+	//pwmSetClock(59);
+
 	
 	printf("LEDS done\n");
 	
@@ -49,11 +54,13 @@ void initGPIO(void){
 		pinMode(BTNS[j], INPUT);
 		pullUpDnControl(BTNS[j], PUD_UP);
 	}
-	
+/*	
 	//Attach interrupts to Buttons
-	for(int j; j < sizeof(BTNS)/sizeof(BTNS[0]; j++){
-		wiringPiISR(BTNS[j], INT_EDGE_FALLING, myInterrupt);
-	}
+	for(int h; h < sizeof(BTNS)/sizeof(BTNS[0]); h++){
+		wiringPiISR(BTNS[h], INT_EDGE_FALLING, myInterrupt);
+	}*/
+	wiringPiISR(BTNS[1],INT_EDGE_FALLING, myInterrupt);
+	wiringPiISR(BTNS[0],INT_EDGE_FALLING, myInterrupt);
 	//Write your logic here
 	
 	printf("BTNS done\n");
@@ -80,6 +87,7 @@ int main(void){
 		//Write your logic here
 		
 		//Function calls to toggle LEDs
+		secPWM(1);
 		//Write your logic here
 		
 		// Print out the time we have stored on our RTC
@@ -89,6 +97,15 @@ int main(void){
 		delay(1000); //milliseconds
 	}
 	return 0;
+}
+
+//Interrupt function to print "interrupt" to console when button pushed
+void myInterrupt(void){
+	long interruptTime2 = millis();
+	if(interruptTime2 - lastInterruptTime>200){
+		printf("button push\n");
+	}
+	lastInterruptTime = interruptTime2;
 }
 
 /*
@@ -126,6 +143,8 @@ void lightMins(int units){
  */
 void secPWM(int units){
 	// Write your logic here
+	var = 1024/59 *mult; 
+	pwmWrite(SECS, var);
 }
 
 /*
