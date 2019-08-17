@@ -51,6 +51,9 @@ void initGPIO(void){
 	}
 	
 	//Attach interrupts to Buttons
+	for(int j; j < sizeof(BTNS)/sizeof(BTNS[0]; j++){
+		wiringPiISR(BTNS[j], INT_EDGE_FALLING, myInterrupt);
+	}
 	//Write your logic here
 	
 	printf("BTNS done\n");
