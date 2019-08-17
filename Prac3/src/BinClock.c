@@ -43,8 +43,8 @@ void initGPIO(void){
 	//Write your logic here
 	pinMode(SECS,PWM_OUTPUT);
 	//pwmSetMode(PWM_MODE_MS);
-	//pwmSetRange(1024);
-	//pwmSetClock(59);
+	pwmSetRange(1024);
+	pwmSetClock(59);
 
 	
 	printf("LEDS done\n");
@@ -87,7 +87,7 @@ int main(void){
 		//Write your logic here
 		
 		//Function calls to toggle LEDs
-		secPWM(1);
+		secPWM(59);
 		//Write your logic here
 		
 		// Print out the time we have stored on our RTC
@@ -143,8 +143,8 @@ void lightMins(int units){
  */
 void secPWM(int units){
 	// Write your logic here
-	var = 1024/59 *mult; 
-	pwmWrite(SECS, var);
+	var = 1024/59;
+	pwmWrite(SECS, units*var);
 }
 
 /*
