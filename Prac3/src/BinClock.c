@@ -21,6 +21,7 @@ int hours, mins, secs;
 long lastInterruptTime = 0; //Used for button debounce
 int RTC; //Holds the RTC instance
 int var;
+int test;
 int HH,MM,SS;
 
 void initGPIO(void){
@@ -50,17 +51,19 @@ void initGPIO(void){
 	printf("LEDS done\n");
 	
 	//Set up the Buttons
-	for(int j; j < sizeof(BTNS)/sizeof(BTNS[0]); j++){
-		pinMode(BTNS[j], INPUT);
-		pullUpDnControl(BTNS[j], PUD_UP);
-	}
+//	for(int j; j < sizeof(BTNS)/sizeof(BTNS[0]); j++){
+		pinMode(BTNS[0], INPUT);
+		pinMode(BTNS[1], INPUT);
+		pullUpDnControl(BTNS[0], PUD_UP);
+		pullUpDnControl(BTNS[1], PUD_UP);
+//	}
 /*	
 	//Attach interrupts to Buttons
 	for(int h; h < sizeof(BTNS)/sizeof(BTNS[0]); h++){
 		wiringPiISR(BTNS[h], INT_EDGE_FALLING, myInterrupt);
 	}*/
-	wiringPiISR(BTNS[1],INT_EDGE_FALLING, myInterrupt);
 	wiringPiISR(BTNS[0],INT_EDGE_FALLING, myInterrupt);
+	wiringPiISR(BTNS[1],INT_EDGE_FALLING, myInterrupt);
 	//Write your logic here
 	
 	printf("BTNS done\n");
@@ -84,10 +87,13 @@ int main(void){
 	// Repeat this until we shut down
 	for (;;){
 		//Fetch the time from the RTC
+		//hourInc();
+		//minInc();
 		//Write your logic here
 		
 		//Function calls to toggle LEDs
 		secPWM(59);
+		lightHours(1);
 		//Write your logic here
 		
 		// Print out the time we have stored on our RTC
@@ -101,11 +107,11 @@ int main(void){
 
 //Interrupt function to print "interrupt" to console when button pushed
 void myInterrupt(void){
-	long interruptTime2 = millis();
-	if(interruptTime2 - lastInterruptTime>200){
+	long interruptTime = millis();
+	if(interruptTime - lastInterruptTime>200){
 		printf("button push\n");
 	}
-	lastInterruptTime = interruptTime2;
+	lastInterruptTime = interruptTime;
 }
 
 /*
@@ -126,7 +132,11 @@ int hFormat(int hours){
  * Turns on corresponding LED's for hours
  */
 void lightHours(int units){
-	// Write your logic to light up the hour LEDs here	
+	// Write your logic to light up the hour LEDs here
+	digitalWrite(LEDS[0],1);
+	digitalWrite(LEDS[2],1);
+	digitalWrite(LEDS[3],1);
+	digitalWrite(LEDS[1],1);
 }
 
 /*
@@ -216,6 +226,8 @@ void hourInc(void){
 	if (interruptTime - lastInterruptTime>200){
 		printf("Interrupt 1 triggered, %x\n", hours);
 		//Fetch RTC Time
+		hours = wiringPiI2CReadReg8(RTC, HOUR);
+		//printf("Current Hour value on register is:, %x\n ",test);
 		//Increase hours by 1, ensuring not to overflow
 		//Write hours back to the RTC
 	}
@@ -234,6 +246,7 @@ void minInc(void){
 	if (interruptTime - lastInterruptTime>200){
 		printf("Interrupt 2 triggered, %x\n", mins);
 		//Fetch RTC Time
+		mins = wiringPiI2CReadReg8(RTC, MIN);
 		//Increase minutes by 1, ensuring not to overflow
 		//Write minutes back to the RTC
 	}
