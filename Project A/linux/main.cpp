@@ -1,10 +1,8 @@
 /**
  * @file       main.cpp
- * @author     Volodymyr Shymanskyy
- * @license    This project is released under the MIT License (MIT)
- * @copyright  Copyright (c) 2015 Volodymyr Shymanskyy
- * @date       Mar 2015
- * @brief
+ * @author     Noel Loxton & Mauro Borrageiro
+ Modified from code originally written by Volodymyr Shymanskyy for Blynk 
+ * @date       13/10/2019
  */
 
 //#define BLYNK_DEBUG
@@ -25,44 +23,74 @@ static uint16_t port;
 
 #include <BlynkWidgets.h>
 #include <CurrentTime.c>
+#include <wiringPi.h>
 
 int buttonPin = 17; //GPIO17 Pin on the Pi
 bool buttonState = false;
 BlynkTimer tmr;
+//BlynkTimer tmr2;
+//BlynkTimer tmr5;
+int freq=1000; //freq of the monitoring of the system can = 1000, 2000, or 5000
+long lastInterruptTime1 = 0; //used for debouncing of terminal printing
+long lastInterruptTime2 = 0; //used for debouncing of button push
 
-BLYNK_WRITE(V2)
-{
-    printf("Got a value: %s\n", param[0].asStr());
+/*void setFreq(){
+    long interruptTime = millis();
+    if (interruptTime-lastInterruptTime1>150){
+        tmr.setInterval(freq, [](){
+           Blynk.virtualWrite(V1, getHours(),":",getMins(),":",getSecs(),"\n");
+        });
+    }
+   lastInterruptTime1=interruptTime;
+}*/
+
+void changeFreq(void){
+    long interruptTime = millis();
+     if (interruptTime - lastInterruptTime2>300){
+     Blynk.virtualWrite(V1,"interrupt","\n");
+	if (freq==1000){
+	    Blynk.virtualWrite(V1,"test1","\n");
+ 	    freq = 2000;
+	    tmr.changeInterval(tmr,freq)
+	}else{
+	    if(freq==2000){
+	    Blynk.virtualWrite(V1,"test2","\n");
+	    freq = 5000;
+	    tmr.changeInterval(tmr,freq);
+	    }else{
+	    Blynk.virtualWrite(V1,"test5","\n");
+	    freq = 1000;
+	    tmr.changeInterval(tmr,freq);
+	    }
+	}
+
+     }
+lastInterruptTime2=interruptTime;
 }
 
 void setup()
 {
     Blynk.begin(auth, serv, port);
-    tmr.setInterval(5000, [](){
-      Blynk.virtualWrite(V1, getHours(),":",getMins(),":",getSecs(),"\n");
+    tmr.setInterval(freq, [](){
+        Blynk.virtualWrite(V1, getHours(),":",getMins(),":",getSecs(),"\n");
     });
     pinMode(buttonPin, INPUT); //Set GPIO17 as digital input
-    pullUpDnControl(buttonPin,PUD_UP);//set an interanl pull up R for GPIO17
+    pullUpDnControl(buttonPin,PUD_UP);//set an internal pull up R for GPIO17
+    wiringPiSetup();
+    pinMode(27,INPUT);
+    pullUpDnControl(27,PUD_UP);
+    wiringPiISR(27,INT_EDGE_FALLING,changeFreq);
+    //Blynk.virtualWrite(V1, "clr");
 }
 
 void loop()
 {
+  
+    //setFreq();
     Blynk.run();
+    //setFreq();
     tmr.run();
-    if(buttonState != digitalRead(buttonPin)) //check the button state against its last known value, if true:
-    {
-       if(digitalRead(buttonPin) == TRUE) //if true, set the Virtual Pin "V0" to a value of 0 (full off)
-        {
-            Blynk.virtualWrite(V0, 0); 
-        }
-        else{  
-            Blynk.virtualWrite(V0, 255);  //Else we set the virtual pin "V0" to a value of 255 (full on)
-        }
-    }   
-    else {}    //if last value = current value, we do nothing. 
-    buttonState = digitalRead(buttonPin);  //update the button state. 
 }
-
 
 int main(int argc, char* argv[])
 {
@@ -71,6 +99,7 @@ int main(int argc, char* argv[])
     setup();
     while(true) {
         loop();
+//	setFreq();
     }
 
     return 0;
