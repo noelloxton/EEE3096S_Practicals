@@ -51,16 +51,16 @@ void changeFreq(void){
 	if (freq==1000){
 	    Blynk.virtualWrite(V1,"test1","\n");
  	    freq = 2000;
-	    tmr.changeInterval(tmr,freq)
+	    tmr.changeInterval(0,freq);
 	}else{
 	    if(freq==2000){
 	    Blynk.virtualWrite(V1,"test2","\n");
 	    freq = 5000;
-	    tmr.changeInterval(tmr,freq);
+	    tmr.changeInterval(0,freq);
 	    }else{
 	    Blynk.virtualWrite(V1,"test5","\n");
 	    freq = 1000;
-	    tmr.changeInterval(tmr,freq);
+	    tmr.changeInterval(0,freq);
 	    }
 	}
 
