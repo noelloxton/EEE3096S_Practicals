@@ -39,16 +39,19 @@ int freq=1000; //freq of the monitoring of the system can = 1000, 2000, or 5000
 int cnt;
 int H,M,S;
 int adcCh;
+int firstAlarm = 1;
 int reads [3];
 bool alarmErr = false;
 bool startStop = false; // false = stop, true = start
 long lastInterruptTime = 0; //used for debouncing of button push
+long lastAlarm=0;
 
-void start_stop_isr(void){
+void startStopISR(void){
     //Start stop monitoring
     long interruptTime = millis();
 
     if(interruptTime-lastInterruptTime>200){
+        Blynk.virtualWrite(V0,"interrupt");
 	if(!startStop){
 	    printf("Stopped\n");
 	}
@@ -93,6 +96,16 @@ void changeFreq(void){
     lastInterruptTime=interruptTime;
 }
 
+void alarmDis(void){
+    //Start stop monitoring
+    long interruptTime = millis();
+
+    if(interruptTime-lastInterruptTime>200){
+	alarmErr = false; //invert the state of playing
+    }
+    lastInterruptTime = interruptTime;
+}
+
 void setup()
 {
     Blynk.begin(auth, serv,port);
@@ -103,6 +116,7 @@ void setup()
     //pullUpDnControl(buttonPin,PUD_UP);//set an internal pull up R for GPIO17
     mcp3004Setup(BASE, SPI_CHAN);
     wiringPiSetup();
+    pinMode(12,OUTPUT);
     pinMode(26,INPUT);//button for start/stop
     pinMode(13,INPUT);//button for reset time
     pinMode(6,INPUT);//button for change frequency
@@ -111,10 +125,10 @@ void setup()
     pullUpDnControl(13,PUD_UP);
     pullUpDnControl(6,PUD_UP);
     pullUpDnControl(5,PUD_UP);
-    //wiringPiISR(26,INT_EDGE_FALLING,startStop);
+    wiringPiISR(26,INT_EDGE_FALLING,startStopISR);
     wiringPiISR(13,INT_EDGE_FALLING,rstTime);
     wiringPiISR(6,INT_EDGE_FALLING,changeFreq);
-    //wiringPiISR(5,INT_EDGE_FALLING,alarmDis);
+    wiringPiISR(5,INT_EDGE_FALLING,alarmDis);
     cnt = getSecs();
     S = cnt-cnt;
     M = getMins()-getMins();
@@ -123,14 +137,28 @@ void setup()
 
 double Vout(void){
     /*Alarm detection variable*/
+    long timeNow = millis();
     double vout =1;
     vout =  (reads[1]/1023.0)*voltageConvert(0);
     if(vout<0.65 || vout>2.65){
-	alarmErr = true; //alarm sound
+	if(firstAlarm){
+	    alarmErr = true;
+	    lastAlarm = timeNow;
+	    firstAlarm = 0;
+	}
+	else if (timeNow-lastAlarm>10000){
+	    alarmErr = true; //alarm sound
+	    lastAlarm = timeNow;
+	}
+    }
+	/*else{
+	    alarmErr = false;
+	}
     }
     else{
 	alarmErr = false; //operating stage is fine
-    }
+    }*/
+    //lastAlarm = timeNow;
     return vout;
 }
 
@@ -228,11 +256,8 @@ int main(int argc, char* argv[])
     Blynk.virtualWrite(V0,"clr");
     while(true) {
         loop();
-	if(alarmErr){
-	    Blynk.virtualWrite(V1,255);
-	    digitalWrite(12,1);
-	}
 	while(startStop){
+	    loop();
 	    for(adcCh=0; adcCh<3;adcCh++){
 	        reads[adcCh] = analogRead(BASE+adcCh);
 	    }
@@ -241,7 +266,20 @@ int main(int argc, char* argv[])
 		Blynk.virtualWrite(V2,tempConvert(2));
 		Blynk.virtualWrite(V4,reads[1]);
 		Blynk.virtualWrite(V5,Vout());
+	        if(alarmErr){
+	            Blynk.virtualWrite(V1,255);
+	            digitalWrite(12,1);
+		}else{
+	    	    Blynk.virtualWrite(V1,0);
+	    	    digitalWrite(12,0);
+	        }
+
 	}
+	Blynk.virtualWrite(V3,"clr");
+        Blynk.virtualWrite(V2,"clr");
+        Blynk.virtualWrite(V4,"clr");
+        Blynk.virtualWrite(V5,"clr");
+
     }
 
     return 0;
